@@ -181,69 +181,44 @@
   .shuffle-btn { color: var(--accent); border-color: var(--accent); }
   .shuffle-btn:hover { background: var(--accent-dim); }
   .shuffle-btn[hidden] { display: none; }
-  .sortgroup .divider { width: 1px; height: 18px; background: var(--line-soft); margin: 0 2px; }
-  .viewtab {
+
+  .controls-row > .divider { width: 1px; height: 18px; background: var(--line-soft); flex-shrink: 0; }
+  .brief-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 280px;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+  .brief-inline-text {
     font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 12.5px;
+    color: var(--accent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 480px;
+  }
+  .brief-inline-btn {
+    font-family: var(--mono);
+    font-size: 13px;
     color: var(--fg-2);
     background: none;
     border: 1px solid var(--line-soft);
-    padding: 6px 12px;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
     cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .viewtab:hover { color: var(--fg); border-color: var(--accent); }
-  .viewtab.active { color: var(--bg); background: var(--accent); border-color: var(--accent); }
-
-  /* ---------- BRIEF BUILDER ---------- */
-  .briefbuilder { padding: clamp(28px, 4vw, 48px) 0 80px; }
-  .brief-card {
-    background: var(--bg-2);
-    border: 1px solid var(--line);
-    padding: clamp(28px, 5vw, 56px) clamp(20px, 5vw, 40px);
-    text-align: center;
-    max-width: 780px;
-    margin: 0 auto;
-  }
-  .brief-text {
-    font-size: clamp(22px, 3.6vw, 36px);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    line-height: 1.35;
-    color: var(--fg);
-    margin: 18px 0 30px;
-    min-height: 2.7em;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    text-wrap: balance;
-  }
-  .brief-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .brief-btn {
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 13px 24px;
-    cursor: pointer;
-    border: 1px solid var(--accent);
-    background: var(--accent);
-    color: var(--bg);
-    font-weight: 700;
     transition: all 0.2s;
   }
-  .brief-btn:hover { background: oklch(0.82 0.13 62); border-color: oklch(0.82 0.13 62); }
-  .brief-btn.ghost { background: none; color: var(--fg-2); border-color: var(--line); font-weight: 400; }
-  .brief-btn.ghost:hover { color: var(--fg); border-color: var(--accent); }
-  .brief-note { margin-top: 16px; color: var(--fg-3); }
-  .brief-history { margin: 32px auto 0; max-width: 640px; display: flex; flex-direction: column; gap: 6px; }
-  .brief-history .item {
-    font-family: var(--mono); font-size: 12px; color: var(--fg-3);
-    padding: 8px 12px; border-left: 2px solid var(--line-soft);
-    background: var(--bg-2);
+  .brief-inline-btn:hover { color: var(--fg); border-color: var(--accent); }
+  @media (max-width: 880px) {
+    .brief-inline { justify-content: flex-start; flex-basis: 100%; }
+    .brief-inline-text { white-space: normal; max-width: none; }
   }
 
   /* ---------- GRID ---------- */
@@ -398,8 +373,13 @@
       <span class="mono-label">Sort</span>
       <div class="sortbtns" id="sortBtns"></div>
       <button class="shuffle-btn" id="shuffleBtn" hidden>⟲ Shuffle</button>
-      <span class="divider"></span>
-      <button class="viewtab" id="briefTabBtn">Brief Builder</button>
+    </div>
+    <span class="divider"></span>
+    <div class="brief-inline" id="briefInline">
+      <span class="mono-label">Brief Builder</span>
+      <span class="brief-inline-text" id="briefInlineText" title="">—</span>
+      <button class="brief-inline-btn" id="briefInlineRefresh" title="New brief">⟲</button>
+      <button class="brief-inline-btn" id="briefInlineCopy" title="Copy">⧉</button>
     </div>
   </div>
 </div>
@@ -409,19 +389,6 @@
     <div class="grid" id="grid"></div>
   </div>
 </main>
-
-<section class="briefbuilder wrap" id="briefBuilder" hidden>
-  <div class="brief-card">
-    <div class="mono-label">Random Design Brief</div>
-    <div class="brief-text" id="briefText">—</div>
-    <div class="brief-actions">
-      <button class="brief-btn" id="briefGenerate">Generate Brief</button>
-      <button class="brief-btn ghost" id="briefCopy">Copy</button>
-    </div>
-    <p class="brief-note mono-label">Built only from words in this encyclopedia</p>
-  </div>
-  <div class="brief-history" id="briefHistory"></div>
-</section>
 
 <footer>
   <div class="wrap foot">
@@ -516,35 +483,18 @@
 
   function renderSortBtns() {
     const modes = [{ key: 'alpha', label: 'A–Z' }, { key: 'date', label: 'Date Added' }, { key: 'random', label: 'Random' }];
-    sortBtnsEl.innerHTML = modes.map(m => `<button data-sort="${m.key}" class="${sortMode === m.key && view === 'browse' ? 'active' : ''}">${m.label}</button>`).join('');
+    sortBtnsEl.innerHTML = modes.map(m => `<button data-sort="${m.key}" class="${sortMode === m.key ? 'active' : ''}">${m.label}</button>`).join('');
     sortBtnsEl.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
         sortMode = btn.dataset.sort;
         if (sortMode === 'random' && !randomOrder) shuffle();
         shuffleBtn.hidden = sortMode !== 'random';
-        setView('browse');
+        renderSortBtns();
+        renderGrid();
       });
     });
   }
   shuffleBtn.addEventListener('click', () => { shuffle(); renderGrid(); });
-
-  /* ---- View toggle: Browse Terms <-> Brief Builder ---- */
-  let view = 'browse';
-  const briefTabBtn = document.getElementById('briefTabBtn');
-  const briefBuilderEl = document.getElementById('briefBuilder');
-  const mainEl = document.querySelector('main');
-  function setView(next) {
-    view = next;
-    const isBrief = view === 'brief';
-    mainEl.hidden = isBrief;
-    filtersEl.hidden = isBrief;
-    briefBuilderEl.hidden = !isBrief;
-    briefTabBtn.classList.toggle('active', isBrief);
-    if (isBrief && briefText.textContent === '—') generateBrief();
-    renderSortBtns();
-    if (!isBrief) renderGrid();
-  }
-  briefTabBtn.addEventListener('click', () => setView('brief'));
 
   function sortList(list) {
     if (sortMode === 'alpha') return list.slice().sort((a, b) => a.term.localeCompare(b.term));
@@ -631,21 +581,18 @@
     () => `${pick(briefNouns)} of the ${pick(briefNouns)}`,
   ];
 
-  const briefText = document.getElementById('briefText');
-  const briefHistoryEl = document.getElementById('briefHistory');
-  let briefHistory = [];
+  const briefInlineText = document.getElementById('briefInlineText');
 
   function generateBrief() {
     const text = BRIEF_TEMPLATES[Math.floor(Math.random() * BRIEF_TEMPLATES.length)]();
-    briefText.textContent = text;
-    briefHistory.unshift(text);
-    briefHistory = briefHistory.slice(0, 6);
-    briefHistoryEl.innerHTML = briefHistory.slice(1).map(h => `<div class="item">${h}</div>`).join('');
+    briefInlineText.textContent = text;
+    briefInlineText.title = text;
   }
-  document.getElementById('briefGenerate').addEventListener('click', generateBrief);
-  document.getElementById('briefCopy').addEventListener('click', () => {
-    navigator.clipboard?.writeText(briefText.textContent).catch(() => {});
+  document.getElementById('briefInlineRefresh').addEventListener('click', generateBrief);
+  document.getElementById('briefInlineCopy').addEventListener('click', () => {
+    navigator.clipboard?.writeText(briefInlineText.textContent).catch(() => {});
   });
+  generateBrief();
 
   renderFilters();
   renderSortBtns();
