@@ -127,34 +127,6 @@
     .nav { gap: 12px; }
   }
 
-  /* ---------- HERO ---------- */
-  .hero { padding: clamp(40px, 6vw, 76px) 0 clamp(28px, 4vw, 40px); border-bottom: 1px solid var(--line-soft); }
-  .hero h1 {
-    font-size: clamp(40px, 7.5vw, 96px);
-    font-weight: 400;
-    line-height: 0.96;
-    letter-spacing: -0.02em;
-    margin-bottom: 22px;
-  }
-  .hero h1 em { font-style: normal; color: var(--fg-3); }
-  .hero-sub {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 40px;
-    flex-wrap: wrap;
-  }
-  .hero-sub p {
-    max-width: 56ch;
-    color: var(--fg-2);
-    font-size: clamp(15px, 1.3vw, 17px);
-    text-wrap: pretty;
-  }
-  .hero-stats { display: flex; gap: 40px; }
-  .stat .n { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
-  .stat .l { margin-top: 4px; }
-  @media (max-width: 640px) { .hero-sub { flex-direction: column; align-items: flex-start; } }
-
   /* ---------- FILTERS ---------- */
   .controls {
     position: sticky;
@@ -165,6 +137,7 @@
     border-bottom: 1px solid var(--line-soft);
     padding: 16px 0;
   }
+  .controls-row { display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; }
   .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .filter {
     font-family: var(--mono);
@@ -178,49 +151,58 @@
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
   }
+  .filter .fdot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 7px; background: var(--cat-color, var(--accent)); flex-shrink: 0; }
   .filter .c { color: var(--fg-3); margin-left: 6px; }
   .filter:hover { color: var(--fg); border-color: var(--line); }
   .filter.active { color: var(--bg); background: var(--fg); border-color: var(--fg); }
   .filter.active .c { color: oklch(0.155 0.006 265 / 0.6); }
 
+  .sortgroup { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .sortbtns { display: flex; gap: 6px; }
+  .sortbtns button, .shuffle-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-2);
+    background: none;
+    border: 1px solid var(--line-soft);
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .sortbtns button:hover { color: var(--fg); border-color: var(--line); }
+  .sortbtns button.active { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+  .shuffle-btn { color: var(--accent); border-color: var(--accent); }
+  .shuffle-btn:hover { background: var(--accent-dim); }
+  .shuffle-btn[hidden] { display: none; }
+
   /* ---------- GRID ---------- */
   main { padding: clamp(24px, 3vw, 36px) 0 80px; }
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: 4px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line-soft);
   }
-  .card {
+  .term-cell {
     position: relative;
     background: var(--bg-2);
-    border: 1px solid transparent;
-    padding: 20px 20px 18px;
+    border-left: 3px solid var(--cat-color, var(--accent));
+    padding: 9px 12px;
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
+    transition: background 0.15s;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-height: 148px;
+    align-items: center;
+    min-height: 38px;
   }
-  .card:hover { border-color: var(--accent); background: var(--bg-3); }
-  .card .idx {
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: 0.08em; color: var(--fg-3);
-  }
-  .card .t { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
-  .card .cat {
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--accent);
-    align-self: flex-start;
-  }
-  .card .d {
-    color: var(--fg-2);
-    font-size: 13.5px;
-    line-height: 1.5;
-    margin-top: auto;
-  }
+  .term-cell:hover { background: var(--bg-3); z-index: 2; }
+  .term-cell .t { font-size: 12.5px; font-weight: 500; line-height: 1.3; letter-spacing: -0.005em; }
   .empty {
     padding: 60px 0;
     text-align: center;
@@ -230,7 +212,34 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     grid-column: 1 / -1;
+    background: var(--bg);
   }
+
+  /* ---------- TOOLTIP ---------- */
+  #tooltip {
+    position: fixed;
+    left: 0; top: 0;
+    z-index: 200;
+    width: 300px;
+    max-width: calc(100vw - 24px);
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--cat-color, var(--accent));
+    padding: 12px 14px;
+    box-shadow: 0 12px 32px oklch(0.05 0.006 265 / 0.55);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    pointer-events: none;
+  }
+  #tooltip.show { opacity: 1; transform: translateY(0); }
+  #tooltip .cat {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--cat-color, var(--accent)); display: block; margin-bottom: 6px;
+  }
+  #tooltip .term { font-weight: 700; font-size: 14.5px; color: var(--fg); display: block; margin-bottom: 6px; letter-spacing: -0.01em; }
+  #tooltip .def { font-size: 13px; line-height: 1.55; color: var(--fg-2); }
+  @media (hover: none) { #tooltip { display: none; } }
 
   /* ---------- FOOTER ---------- */
   footer { border-top: 1px solid var(--line-soft); padding: 40px 0; }
@@ -259,7 +268,7 @@
   .lb-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; gap: 24px; }
   .lb-bar .cat {
     font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--accent); cursor: pointer; text-decoration: none; display: inline-block; margin-bottom: 10px;
+    color: var(--cat-color, var(--accent)); cursor: pointer; text-decoration: none; display: inline-block; margin-bottom: 10px;
   }
   .lb-bar .cat:hover { text-decoration: underline; }
   .lb-bar .t { font-size: clamp(26px, 4vw, 36px); font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; }
@@ -318,23 +327,15 @@
 </header>
 
 <div class="controls">
-  <div class="wrap">
+  <div class="wrap controls-row">
     <div class="filters" id="filters"></div>
-  </div>
-</div>
-
-<section class="hero">
-  <div class="wrap">
-    <h1>A field guide<br><em>to the worlds I build.</em></h1>
-    <div class="hero-sub">
-      <p>Every recurring term, structure, style, and reference I keep coming back to for concept art and architecture — collected in one place so I stop losing track of them.</p>
-      <div class="hero-stats">
-        <div class="stat"><div class="n" id="statTerms">0</div><div class="l mono-label">Terms</div></div>
-        <div class="stat"><div class="n" id="statCats">0</div><div class="l mono-label">Categories</div></div>
-      </div>
+    <div class="sortgroup">
+      <span class="mono-label">Sort</span>
+      <div class="sortbtns" id="sortBtns"></div>
+      <button class="shuffle-btn" id="shuffleBtn" hidden>⟲ Shuffle</button>
     </div>
   </div>
-</section>
+</div>
 
 <main>
   <div class="wrap">
@@ -348,6 +349,12 @@
     <span class="foot-copy">A personal reference, not a public archive. Add or edit entries in <code>data.js</code>.</span>
   </div>
 </footer>
+
+<div id="tooltip">
+  <span class="cat"></span>
+  <span class="term"></span>
+  <span class="def"></span>
+</div>
 
 <!-- LIGHTBOX -->
 <div class="lb" id="lb">
@@ -375,21 +382,28 @@
 
 <script src="data.js"></script>
 <script>
-  const TERMS = (window.TERMS || []).slice().sort((a, b) => a.term.localeCompare(b.term));
+  const TERMS = window.TERMS || [];
   const CATEGORIES = window.CATEGORIES || [];
   const catLabel = Object.fromEntries(CATEGORIES.map(c => [c.key, c.label]));
 
-  document.getElementById('statTerms').textContent = TERMS.length;
-  document.getElementById('statCats').textContent = CATEGORIES.length;
+  // Evenly-spaced hues around the same accent formula, one per category, for quick visual scanning.
+  const CAT_HUES = {};
+  CATEGORIES.forEach((c, i) => { CAT_HUES[c.key] = Math.round((62 + i * (360 / CATEGORIES.length)) % 360); });
+  function catColor(key) { return `oklch(0.76 0.12 ${CAT_HUES[key] ?? 62})`; }
 
   let activeCat = 'all';
   let query = '';
+  let sortMode = 'alpha'; // 'alpha' | 'date' | 'random'
+  let randomOrder = null; // slug -> rank, set on first random sort or shuffle
   let visible = [];
 
   const grid = document.getElementById('grid');
   const filtersEl = document.getElementById('filters');
+  const sortBtnsEl = document.getElementById('sortBtns');
+  const shuffleBtn = document.getElementById('shuffleBtn');
   const navCount = document.getElementById('navCount');
   const searchInput = document.getElementById('search');
+  const tooltip = document.getElementById('tooltip');
 
   function countFor(catKey) {
     return catKey === 'all' ? TERMS.length : TERMS.filter(t => t.cat === catKey).length;
@@ -398,8 +412,8 @@
   function renderFilters() {
     const all = [{ key: 'all', label: 'All' }, ...CATEGORIES];
     filtersEl.innerHTML = all.map(c => `
-      <button class="filter${c.key === activeCat ? ' active' : ''}" data-cat="${c.key}">
-        ${c.label}<span class="c">${countFor(c.key)}</span>
+      <button class="filter${c.key === activeCat ? ' active' : ''}" data-cat="${c.key}" style="--cat-color:${catColor(c.key)}">
+        <span class="fdot"></span>${c.label}<span class="c">${countFor(c.key)}</span>
       </button>
     `).join('');
     filtersEl.querySelectorAll('.filter').forEach(btn => {
@@ -411,6 +425,37 @@
     });
   }
 
+  function shuffle() {
+    const arr = TERMS.map(t => t.slug);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    randomOrder = new Map(arr.map((slug, i) => [slug, i]));
+  }
+
+  function renderSortBtns() {
+    const modes = [{ key: 'alpha', label: 'A–Z' }, { key: 'date', label: 'Date Added' }, { key: 'random', label: 'Random' }];
+    sortBtnsEl.innerHTML = modes.map(m => `<button data-sort="${m.key}" class="${sortMode === m.key ? 'active' : ''}">${m.label}</button>`).join('');
+    sortBtnsEl.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sortMode = btn.dataset.sort;
+        if (sortMode === 'random' && !randomOrder) shuffle();
+        shuffleBtn.hidden = sortMode !== 'random';
+        renderSortBtns();
+        renderGrid();
+      });
+    });
+  }
+  shuffleBtn.addEventListener('click', () => { shuffle(); renderGrid(); });
+
+  function sortList(list) {
+    if (sortMode === 'alpha') return list.slice().sort((a, b) => a.term.localeCompare(b.term));
+    if (sortMode === 'date') return list.slice().sort((a, b) => a.order - b.order);
+    if (!randomOrder) shuffle();
+    return list.slice().sort((a, b) => (randomOrder.get(a.slug) ?? 0) - (randomOrder.get(b.slug) ?? 0));
+  }
+
   function matches(t) {
     if (activeCat !== 'all' && t.cat !== activeCat) return false;
     if (!query) return true;
@@ -419,24 +464,50 @@
   }
 
   function renderGrid() {
-    visible = TERMS.filter(matches);
+    visible = sortList(TERMS.filter(matches));
     navCount.innerHTML = `Showing <b>${visible.length}</b> of ${TERMS.length}`;
     if (!visible.length) {
       grid.innerHTML = `<div class="empty">No terms match “${query}”</div>`;
       return;
     }
     grid.innerHTML = visible.map((t, i) => `
-      <div class="card" data-slug="${t.slug}">
-        <div class="idx">${String(i + 1).padStart(3, '0')}</div>
+      <div class="term-cell" data-i="${i}" style="--cat-color:${catColor(t.cat)}">
         <div class="t">${t.term}</div>
-        <div class="cat">${catLabel[t.cat] || t.cat}</div>
-        <div class="d">${t.def}</div>
       </div>
     `).join('');
-    grid.querySelectorAll('.card').forEach((card, i) => {
-      card.addEventListener('click', () => openLb(i));
-    });
   }
+
+  grid.addEventListener('click', e => {
+    const cell = e.target.closest('.term-cell');
+    if (cell) openLb(+cell.dataset.i);
+  });
+
+  /* ---- Hover tooltip (desktop only; mobile/touch falls back to tap → lightbox) ---- */
+  grid.addEventListener('mouseover', e => {
+    const cell = e.target.closest('.term-cell');
+    if (!cell) return;
+    const t = visible[+cell.dataset.i];
+    tooltip.querySelector('.cat').textContent = catLabel[t.cat] || t.cat;
+    tooltip.querySelector('.term').textContent = t.term;
+    tooltip.querySelector('.def').textContent = t.def;
+    tooltip.style.setProperty('--cat-color', catColor(t.cat));
+    const rect = cell.getBoundingClientRect();
+    tooltip.classList.remove('show');
+    const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+    let left = rect.left;
+    let top = rect.bottom + 8;
+    if (left + tw > window.innerWidth - 12) left = window.innerWidth - tw - 12;
+    if (left < 12) left = 12;
+    if (top + th > window.innerHeight - 12) top = rect.top - th - 8;
+    if (top < 12) top = 12;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+    requestAnimationFrame(() => tooltip.classList.add('show'));
+  });
+  grid.addEventListener('mouseout', e => {
+    if (e.target.closest('.term-cell')) tooltip.classList.remove('show');
+  });
+  window.addEventListener('scroll', () => tooltip.classList.remove('show'), { passive: true });
 
   searchInput.addEventListener('input', () => {
     query = searchInput.value.trim();
@@ -444,6 +515,7 @@
   });
 
   renderFilters();
+  renderSortBtns();
   renderGrid();
 
   /* ---- Lightbox ---- */
@@ -459,6 +531,7 @@
   function fillLb() {
     const t = visible[cur];
     document.getElementById('lbTitle').textContent = t.term;
+    document.getElementById('lb').querySelector('.lb-inner').style.setProperty('--cat-color', catColor(t.cat));
     const catEl = document.getElementById('lbCat');
     catEl.textContent = catLabel[t.cat] || t.cat;
     catEl.onclick = (e) => {
