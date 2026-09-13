@@ -438,6 +438,15 @@
   CATEGORIES.forEach((c, i) => { CAT_HUES[c.key] = Math.round((62 + i * (360 / CATEGORIES.length)) % 360); });
   function catColor(key) { return `oklch(0.76 0.12 ${CAT_HUES[key] ?? 62})`; }
 
+  // Greyscale variant (same per-category spread, zero chroma) used for the dense term grid's bars.
+  const CAT_INDEX = Object.fromEntries(CATEGORIES.map((c, i) => [c.key, i]));
+  function catGrey(key) {
+    const i = CAT_INDEX[key] ?? 0;
+    const n = Math.max(1, CATEGORIES.length - 1);
+    const lightness = (0.42 + (i * (0.4 / n))).toFixed(3);
+    return `oklch(${lightness} 0 0)`;
+  }
+
   let activeCat = 'all';
   let query = '';
   let sortMode = 'alpha'; // 'alpha' | 'date' | 'random'
@@ -518,7 +527,7 @@
       return;
     }
     grid.innerHTML = visible.map((t, i) => `
-      <div class="term-cell" data-i="${i}" style="--cat-color:${catColor(t.cat)}">
+      <div class="term-cell" data-i="${i}" style="--cat-color:${catGrey(t.cat)}">
         <div class="t">${t.term}</div>
       </div>
     `).join('');
